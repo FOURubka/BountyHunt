@@ -1,0 +1,88 @@
+# BountyHunt - Main Configuration
+
+storage:
+  type: SQLITE # SQLITE or MYSQL
+  mysql:
+    host: localhost
+    port: 3306
+    database: bountyhunt
+    username: root
+    password: ''
+    use-ssl: false
+
+settings:
+  # General settings
+  bounty:
+    min-amount: 100.0
+    max-amount: 1000000.0
+    tax-percentage: 10.0 # Fee taken by the server
+    allow-self-bounty: false
+    
+  # Live Wanted Status
+  wanted-status:
+    enabled: true
+    bossbar:
+      enabled: true
+      text: "<red><bold>WANTED:</bold> %player% <gray>(Reward: %amount%)"
+      color: RED
+      style: SOLID
+    actionbar:
+      enabled: true
+      text: "<red>⚠ You are currently WANTED! ⚠"
+    particles:
+      enabled: true
+      type: FLAME
+      interval-ticks: 20
+    visibility-range: 50
+
+  # Bounty Escalation
+  escalation:
+    enabled: true
+    interval-minutes: 30
+    multiplier: 1.1 # Multiplies bounty by 1.1 every interval
+    max-multiplier: 5.0
+
+  # Reputation System
+  reputation:
+    enabled: true
+    ranks:
+      ROOKIE:
+        threshold: 0
+        display: "<gray>Rookie"
+      HUNTER:
+        threshold: 10
+        display: "<green>Hunter"
+      ASSASSIN:
+        threshold: 50
+        display: "<dark_red>Assassin"
+      LEGEND:
+        threshold: 200
+        display: "<gold><bold>Bounty Legend"
+
+  # Anti-Abuse
+  anti-abuse:
+    kill-cooldown-seconds: 3600
+    ip-check: true
+    min-playtime-minutes: 60
+
+  # Insurance System
+  insurance:
+    enabled: true
+    cost: 500.0
+    duration-minutes: 30
+
+  # Bounty Escalation
+  escalation:
+    enabled: true
+    interval-minutes: 30
+    multiplier: 1.1
+    max-multiplier: 5.0
+
+  # Contract System
+  contracts:
+    enabled: true
+    types:
+      - KILL_TARGET
+      - ASSIST_KILL
+    reward-bonus: 1.5
+    min-bounty-value: 500.0

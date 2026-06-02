@@ -1,0 +1,18 @@
+name: BountyHunt
+version: 1.0.0
+main: com.bountyhunt.BountyHunt
+api-version: '1.21'
+depend: [Vault]
+softdepend: [PlaceholderAPI]
+description: Advanced Player Bounty System for Paper 1.21+
+commands:
+  bounty:
+    description: Main bounty command
+    aliases: [bounties, bhunt]
+permissions:
+  bountyhunt.use:
+    description: Allows use of basic bounty commands
+    default: true
+  bountyhunt.admin:
+    description: Allows administrative actions
+    default: op

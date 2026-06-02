@@ -1,0 +1,16 @@
+general:
+  prefix: "<gradient:#ffaa00:#ff5500><bold>BountyHunt</bold></gradient> <dark_gray>» <gray>"
+  no-permission: "<red>You don't have permission to do this!"
+  player-only: "<red>This command can only be used by players."
+  reload: "<green>Plugin configuration reloaded successfully!"
+
+bounty:
+  set-success: "<gray>You set a bounty of <gold>$%amount%</gold> on <red>%target%</red>!"
+  broadcast-set: "<gradient:#ffaa00:#ff5500><bold>WANTED!</bold></gradient> <white>%issuer%</white> placed a bounty of <green>$%amount%</green> on <red>%target%</red>!"
+  claimed: "<green>You claimed the bounty on <white>%target%</white> and received <gold>$%amount%</gold>!"
+  broadcast-claimed: "<gradient:#ff0000:#aa0000><bold>ELIMINATED!</bold></gradient> <white>%hunter%</white> has killed <red>%target%</red> and claimed <green>$%amount%</green>!"
+  insufficient-funds: "<red>You don't have enough money! You need <gold>$%amount%</gold>."
+  min-amount: "<red>Minimum bounty amount is <gold>$%amount%</gold>."
+
+reputation:
+  rank-up: "<gradient:#ffaa00:#ff5500><bold>LEVEL UP!</bold></gradient> Your hunter rank is now %rank%!"
