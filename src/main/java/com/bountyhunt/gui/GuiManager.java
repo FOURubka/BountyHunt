@@ -38,17 +38,8 @@ public class GuiManager {
         meta.getPersistentDataContainer().set(menuActionKey, PersistentDataType.STRING, "open_list");
         activeBounties.setItemMeta(meta);
         
-        gui.setItem(11, activeBounties);
+        gui.setItem(13, activeBounties);
         
-        ItemStack topHunters = new ItemStack(Material.DIAMOND_SWORD);
-        meta = topHunters.getItemMeta();
-        meta.displayName(mm.deserialize("<gold><bold>Top Hunters"));
-        meta.lore(java.util.List.of(mm.deserialize("<gray>View the top bounty hunters.")));
-        meta.getPersistentDataContainer().set(menuActionKey, PersistentDataType.STRING, "open_top");
-        topHunters.setItemMeta(meta);
-        
-        gui.setItem(15, topHunters);
-
         player.openInventory(gui);
     }
     

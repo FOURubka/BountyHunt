@@ -2,10 +2,10 @@ package com.bountyhunt.manager;
 
 import lombok.Getter;
 import com.bountyhunt.BountyHunt;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -22,9 +22,7 @@ public class BountyManager {
     }
 
     public void loadBounties() {
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            plugin.getLogger().info("Attempting to load bounties from database...");
-            try (java.sql.Connection conn = ((com.bountyhunt.storage.impl.SQLiteStorage) plugin.getStorage()).getDataSource().getConnection();
+        try (java.sql.Connection conn = ((com.bountyhunt.storage.impl.SQLiteStorage) plugin.getStorage()).getDataSource().getConnection();
                  java.sql.PreparedStatement stmt = conn.prepareStatement("SELECT uuid, amount FROM bh_bounties WHERE amount > 0");
                  java.sql.ResultSet rs = stmt.executeQuery()) {
                 
@@ -36,51 +34,49 @@ public class BountyManager {
                 plugin.getLogger().info("Successfully loaded " + count + " active bounties into cache.");
             } catch (java.sql.SQLException e) {
                 plugin.getLogger().severe("Error loading bounties: " + e.getMessage());
-                e.printStackTrace();
             }
-        });
     }
 
     public void setBountyDirectly(UUID uuid, double amount) {
-        plugin.getStorage().setBounty(uuid, amount).thenRun(() -> {
+        if (amount > 0) {
             bountyCache.put(uuid, amount);
-        });
+        } else {
+            bountyCache.remove(uuid);
+        }
+        plugin.getStorage().setBounty(uuid, amount);
     }
 
+    // Main thread only: Vault economies aren't thread-safe
     public CompletableFuture<Boolean> setBounty(Player issuer, Player target, double amount) {
-        if (amount < plugin.getConfig().getDouble("settings.bounty.min-amount")) {
+        double min = plugin.getConfig().getDouble("settings.bounty.min-amount");
+        double max = plugin.getConfig().getDouble("settings.bounty.max-amount", Double.MAX_VALUE);
+        if (!Double.isFinite(amount)) return CompletableFuture.completedFuture(false);
+
+        // Store exactly what the economy can withdraw, or the claim pays out more than was paid in
+        int digits = plugin.getEconomyProvider().getFractionalDigits();
+        amount = BigDecimal.valueOf(amount).setScale(digits < 0 ? 2 : Math.min(digits, 2), RoundingMode.DOWN).doubleValue();
+        boolean selfBounty = issuer.getUniqueId().equals(target.getUniqueId());
+
+        if (amount <= 0 || amount < min || amount > max
+                || (selfBounty && !plugin.getConfig().getBoolean("settings.bounty.allow-self-bounty"))
+                || !plugin.getEconomyProvider().has(issuer, amount)
+                || !plugin.getEconomyProvider().withdraw(issuer, amount)) {
             return CompletableFuture.completedFuture(false);
         }
 
-        if (!plugin.getEconomyProvider().has(issuer, amount)) {
-            return CompletableFuture.completedFuture(false);
-        }
-
-        return CompletableFuture.supplyAsync(() -> {
-            plugin.getEconomyProvider().withdraw(issuer, amount);
-            
-            double currentBounty = bountyCache.getOrDefault(target.getUniqueId(), 0.0);
-            double newTotal = currentBounty + amount;
-            
-            plugin.getStorage().setBounty(target.getUniqueId(), newTotal).join();
-            bountyCache.put(target.getUniqueId(), newTotal);
-            
-            return true;
-        });
+        setBountyDirectly(target.getUniqueId(), getBounty(target.getUniqueId()) + amount);
+        return CompletableFuture.completedFuture(true);
     }
 
     public void claimBounty(Player hunter, Player target) {
         Double amount = bountyCache.remove(target.getUniqueId());
         if (amount == null || amount <= 0) return;
 
-        plugin.getStorage().setBounty(target.getUniqueId(), 0).thenRun(() -> {
-            plugin.getEconomyProvider().deposit(hunter, amount);
-            plugin.getStorage().addReputation(hunter.getUniqueId(), 1).join();
-            
-            // Broadcast and notifications would go here
-        });
+        plugin.getStorage().setBounty(target.getUniqueId(), 0);
+        plugin.getEconomyProvider().deposit(hunter, amount);
+        plugin.getStorage().addReputation(hunter.getUniqueId(), 1);
     }
-    
+
     public double getBounty(UUID uuid) {
         return bountyCache.getOrDefault(uuid, 0.0);
     }

@@ -17,13 +17,18 @@ public class VaultEconomyProvider implements EconomyProvider {
     }
 
     @Override
-    public void withdraw(Player player, double amount) {
-        economy.withdrawPlayer(player, amount);
+    public boolean withdraw(Player player, double amount) {
+        return economy.withdrawPlayer(player, amount).transactionSuccess();
     }
 
     @Override
     public void deposit(Player player, double amount) {
         economy.depositPlayer(player, amount);
+    }
+
+    @Override
+    public int getFractionalDigits() {
+        return economy.fractionalDigits();
     }
 
     @Override

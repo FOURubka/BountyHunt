@@ -12,11 +12,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class SQLiteStorage implements Storage {
 
     private final BountyHunt plugin;
     private HikariDataSource dataSource;
+    // One thread keeps writes in the order they were made
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     public SQLiteStorage(BountyHunt plugin) {
         this.plugin = plugin;
@@ -65,6 +70,14 @@ public class SQLiteStorage implements Storage {
 
     @Override
     public void close() {
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
+                plugin.getLogger().severe("Timed out while saving bounties");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         if (dataSource != null) {
             dataSource.close();
         }
@@ -86,7 +99,7 @@ public class SQLiteStorage implements Storage {
             } catch (SQLException e) {
                 plugin.getLogger().severe("Error logging kill history: " + e.getMessage());
             }
-        });
+        }, executor);
     }
 
     @Override
@@ -104,7 +117,7 @@ public class SQLiteStorage implements Storage {
                 plugin.getLogger().severe("Error getting bounty: " + e.getMessage());
             }
             return 0.0;
-        });
+        }, executor);
     }
 
     @Override
@@ -118,7 +131,7 @@ public class SQLiteStorage implements Storage {
             } catch (SQLException e) {
                 plugin.getLogger().severe("Error setting bounty: " + e.getMessage());
             }
-        });
+        }, executor);
     }
 
     @Override
@@ -136,7 +149,7 @@ public class SQLiteStorage implements Storage {
                 plugin.getLogger().severe("Error getting reputation: " + e.getMessage());
             }
             return 0;
-        });
+        }, executor);
     }
 
     @Override
@@ -152,6 +165,6 @@ public class SQLiteStorage implements Storage {
             } catch (SQLException e) {
                 plugin.getLogger().severe("Error adding reputation: " + e.getMessage());
             }
-        });
+        }, executor);
     }
 }

@@ -4,7 +4,6 @@ import com.bountyhunt.BountyHunt;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
@@ -54,13 +53,12 @@ public class WantedManager {
         String colorStr = plugin.getConfig().getString("settings.wanted-status.bossbar.color", "RED");
         String styleStr = plugin.getConfig().getString("settings.wanted-status.bossbar.style", "SOLID");
 
-        Component title = mm.deserialize(text,
-                Placeholder.parsed("player", player.getName()),
-                Placeholder.parsed("amount", String.valueOf(bounty))
-        );
+        Component title = mm.deserialize(text
+                .replace("%player%", player.getName())
+                .replace("%amount%", String.valueOf(bounty)));
 
         BossBar bossBar = activeBossBars.computeIfAbsent(player.getUniqueId(), k -> {
-            BossBar bar = BossBar.bossBar(title, 1.0f, BossBar.Color.valueOf(colorStr), BossBar.Overlay.valueOf(styleStr));
+            BossBar bar = BossBar.bossBar(title, 1.0f, BossBar.Color.valueOf(colorStr), BossBar.Overlay.valueOf(styleStr.equals("SOLID") ? "PROGRESS" : styleStr));
             return bar;
         });
 

@@ -3,6 +3,7 @@ package com.bountyhunt.command;
 import com.bountyhunt.BountyHunt;
 import com.bountyhunt.gui.GuiManager;
 import com.bountyhunt.service.BountyService;
+import com.bountyhunt.manager.BountyTracker;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
@@ -47,7 +48,7 @@ public class BountyCommand implements CommandExecutor, TabCompleter {
             case "add" -> handleAdd(player, args);
             case "info" -> handleInfo(player, args);
             case "top" -> handleTop(player);
-            case "track" -> player.sendMessage(Component.text("Tracking feature coming soon..."));
+            case "track" -> handleTrack(player, args);
             case "reload" -> {
                 if (player.hasPermission("bountyhunt.admin")) {
                     plugin.getConfigManager().reloadConfigs();
@@ -130,6 +131,19 @@ public class BountyCommand implements CommandExecutor, TabCompleter {
         bountyService.placeBounty(player, target, amount).thenAccept(success -> {
             player.sendMessage(mm.deserialize(success ? "<green>Bounty added successfully!" : "<red>Failed to add bounty."));
         });
+    }
+
+    private void handleTrack(Player player, String[] args) {
+        if (args.length < 2) {
+            player.sendMessage(mm.deserialize("<red>Usage: /bounty track <player>"));
+            return;
+        }
+        Player target = Bukkit.getPlayer(args[1]);
+        if (target == null) {
+            player.sendMessage(mm.deserialize("<red>Player not found."));
+            return;
+        }
+        BountyTracker.track(plugin, player, target);
     }
 
     private void handleInfo(Player player, String[] args) {

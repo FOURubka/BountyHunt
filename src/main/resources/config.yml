@@ -35,13 +35,6 @@ settings:
       interval-ticks: 20
     visibility-range: 50
 
-  # Bounty Escalation
-  escalation:
-    enabled: true
-    interval-minutes: 30
-    multiplier: 1.1 # Multiplies bounty by 1.1 every interval
-    max-multiplier: 5.0
-
   # Reputation System
   reputation:
     enabled: true
@@ -59,30 +52,8 @@ settings:
         threshold: 200
         display: "<gold><bold>Bounty Legend"
 
-  # Anti-Abuse
-  anti-abuse:
-    kill-cooldown-seconds: 3600
-    ip-check: true
-    min-playtime-minutes: 60
-
   # Insurance System
   insurance:
     enabled: true
     cost: 500.0
     duration-minutes: 30
-
-  # Bounty Escalation
-  escalation:
-    enabled: true
-    interval-minutes: 30
-    multiplier: 1.1
-    max-multiplier: 5.0
-
-  # Contract System
-  contracts:
-    enabled: true
-    types:
-      - KILL_TARGET
-      - ASSIST_KILL
-    reward-bonus: 1.5
-    min-bounty-value: 500.0

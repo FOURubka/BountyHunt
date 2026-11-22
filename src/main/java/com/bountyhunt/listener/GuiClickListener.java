@@ -37,8 +37,6 @@ public class GuiClickListener implements Listener {
             String action = clicked.getItemMeta().getPersistentDataContainer().get(plugin.getGuiManager().getMenuActionKey(), PersistentDataType.STRING);
             if ("open_list".equals(action)) {
                 plugin.getGuiManager().openBountyList(player);
-            } else if ("open_top".equals(action)) {
-                player.sendMessage("Top hunters coming soon...");
             }
         }
         
@@ -48,7 +46,12 @@ public class GuiClickListener implements Listener {
             UUID targetUuid = UUID.fromString(uuidStr);
             
             player.closeInventory();
-            player.sendMessage("Tracking " + Bukkit.getOfflinePlayer(targetUuid).getName() + "...");
+            Player target = Bukkit.getPlayer(targetUuid);
+            if (target == null) {
+                player.sendMessage("That player is offline.");
+            } else {
+                com.bountyhunt.manager.BountyTracker.track(plugin, player, target);
+            }
         }
     }
 }

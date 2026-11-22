@@ -6,7 +6,6 @@ import com.bountyhunt.config.ConfigManager;
 import com.bountyhunt.gui.GuiManager;
 import com.bountyhunt.listener.BountyListener;
 import com.bountyhunt.manager.BountyManager;
-import com.bountyhunt.manager.EscalationManager;
 import com.bountyhunt.manager.ReputationManager;
 import com.bountyhunt.manager.WantedManager;
 import com.bountyhunt.service.BountyService;
@@ -37,7 +36,6 @@ public final class BountyHunt extends JavaPlugin {
     private WantedManager wantedManager;
     private GuiManager guiManager;
     private ReputationManager reputationManager;
-    private EscalationManager escalationManager;
     
     private BountyService bountyService;
     private ReputationService reputationService;
@@ -50,7 +48,7 @@ public final class BountyHunt extends JavaPlugin {
 
         try {
             // 1. Setup Economy
-            setupEconomy();
+            if (!setupEconomy()) return;
 
             // 2. Load Configs
             this.configManager = new ConfigManager(this);
@@ -66,8 +64,6 @@ public final class BountyHunt extends JavaPlugin {
             this.wantedManager = new WantedManager(this, bountyManager);
             this.guiManager = new GuiManager(this);
             this.reputationManager = new ReputationManager(this);
-            this.escalationManager = new EscalationManager(this, bountyManager);
-            this.escalationManager.start();
 
             // 5. Initialize Services
             this.bountyService = new BountyServiceImpl(this, bountyManager);
@@ -88,7 +84,7 @@ public final class BountyHunt extends JavaPlugin {
                 new com.bountyhunt.integration.BountyPlaceholderExpansion(this).register();
             }
 
-            getLogger().info("BountyHunt v2.0.0 has been successfully enabled!");
+            getLogger().info("BountyHunt has been successfully enabled!");
         } catch (Exception e) {
             getLogger().log(Level.SEVERE, "CRITICAL ERROR during enable!", e);
             getServer().getPluginManager().disablePlugin(this);
@@ -103,17 +99,18 @@ public final class BountyHunt extends JavaPlugin {
         getLogger().info("BountyHunt has been disabled.");
     }
 
-    private void setupEconomy() {
+    private boolean setupEconomy() {
         if (getServer().getPluginManager().getPlugin("Vault") != null) {
             RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
             if (rsp != null) {
                 economyProvider = new VaultEconomyProvider(rsp.getProvider());
                 getLogger().info("Hooked into Vault economy.");
-                return;
+                return true;
             }
         }
         getLogger().severe("No economy provider found! Disabling...");
         getServer().getPluginManager().disablePlugin(this);
+        return false;
     }
 
     public static BountyHunt getInstance() {
